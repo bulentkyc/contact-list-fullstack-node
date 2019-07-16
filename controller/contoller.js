@@ -1,180 +1,239 @@
-const multer = require('multer');
-const path = require('path');
-const jimp = require('jimp');
-const nodemailer = require('nodemailer');
-const contacts = require('../model/Users');
-
+const multer = require("multer");
+const path = require("path");
+const jimp = require("jimp");
+const nodemailer = require("nodemailer");
+const users = require("../model/users");
 
 let contactList = [];
 let fileName = null;
 //set storage engine for avatar
 const storager = multer.diskStorage({
-    destination: 'public/uploads/avatars',
-    filename: (req, file, cb) => {
-        fileName = 'av.' + 
-                    Date.now() + 
-                    path.extname(file.originalname);
-                    cb(null, fileName);
-    }
+  destination: "public/uploads/avatars",
+  filename: (req, file, cb) => {
+    fileName = "av." + Date.now() + path.extname(file.originalname);
+    cb(null, fileName);
+  }
 });
 
 //init upload for avatar
 const upload = multer({
-    storage: storager
-}).single('avatar');
+  storage: storager
+}).single("avatar");
 
 //set storage engine for email
 const attachStorager = multer.diskStorage({
-    destination: 'public/uploads/attachments',
-    filename: (req, file, cb) => {
-        fileName = 'at.' + 
-                    Date.now() + 
-                    path.extname(file.originalname);
-                    cb(null, fileName);
-    }
+  destination: "public/uploads/attachments",
+  filename: (req, file, cb) => {
+    fileName = "at." + Date.now() + path.extname(file.originalname);
+    cb(null, fileName);
+  }
 });
 
 //init upload for email
 const attachUpload = multer({
-    storage: attachStorager
-}).single('attach');
+  storage: attachStorager
+}).single("attach");
 
-exports.homeRoute = (req,res) => {
-    contacts.find({},(err, result)=>{
-        if (err) {
-            console.log(err);       
-        } else {
-            res.render('index',{contactData: result});
-        }
-    });
-    
-}
+exports.homeRoute = (req, res) => {
+  contacts.find({}, (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.render("index", { contactData: result });
+    }
+  });
+};
 
-exports.newContact = (req,res) => {
-    upload(req, res, () => {
-        //check if there is a photo
-        if (fileName == null) {
-            fileName = 'av.default.png';
-        } else {
-            //On here we will process the image resizing
-            jimp.read('public/uploads/avatars/' + fileName, (err, file) => {
-                if(err) throw err;
-                file
-                    .resize(250,250) //resize
-                    .quality(60) // set the quality of image
-                    .write('public/uploads/avatars/' + fileName); //save
-            });
-        }
-        let newContact = {
-            name: req.body.name,
-            mail: req.body.email,
-            avatar: fileName
-        }
-        //mongo goes here...
-        contacts.create(newContact,(err,contacts)=>{
-            if(err) console.log(err);
-            else console.log(`Congrads! Your new contact inserted:${JSON.stringify(newContact)}`);
-        });
-
-        contactList.push(newContact);
-        console.log(contactList);
-        fileName = null;
-        res.redirect('/');
+exports.newContact = (req, res) => {
+  upload(req, res, () => {
+    //check if there is a photo
+    if (fileName == null) {
+      fileName = "av.default.png";
+    } else {
+      //On here we will process the image resizing
+      jimp.read("public/uploads/avatars/" + fileName, (err, file) => {
+        if (err) throw err;
+        file
+          .resize(250, 250) //resize
+          .quality(60) // set the quality of image
+          .write("public/uploads/avatars/" + fileName); //save
+      });
+    }
+    let newContact = {
+      name: req.body.name,
+      mail: req.body.email,
+      avatar: fileName
+    };
+    //mongo goes here...
+    contacts.create(newContact, (err, contacts) => {
+      if (err) console.log(err);
+      else
+        console.log(
+          `Congrads! Your new contact inserted:${JSON.stringify(newContact)}`
+        );
     });
 
-}
+    contactList.push(newContact);
+    console.log(contactList);
+    fileName = null;
+    res.redirect("/");
+  });
+};
 
- //This function gets the ID and delete contact from contactList array
-exports.deleteContact = (req,res) => {
-    //const {id} = req.params;
-    //console.log(id);
+//This function gets the ID and delete contact from contactList array
+exports.deleteContact = (req, res) => {
+  //const {id} = req.params;
+  //console.log(id);
 
-    contacts.findOneAndRemove({_id:req.params.id},
-    (err,result)=>{
-        if(err) console.log(err);
-        else console.log(result);
-    });
+  contacts.findOneAndRemove({ _id: req.params.id }, (err, result) => {
+    if (err) console.log(err);
+    else console.log(result);
+  });
 
-    res.redirect('/');
-
-}
+  res.redirect("/");
+};
 
 exports.sendMail = (req, res) => {
-    attachUpload(req, res, ()=>{
-        // create reusable transporter object using the default SMTP transport
-        let transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-            user: req.body.user, // generated ethereal user
-            pass: req.body.pass // generated ethereal password
-            }
+  attachUpload(req, res, () => {
+    // create reusable transporter object using the default SMTP transport
+    let transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: req.body.user, // generated ethereal user
+        pass: req.body.pass // generated ethereal password
+      }
+    });
+
+    // send mail with defined transport object
+    let info = {
+      from: '"FBW6 Contact List Project 👻" <fb6@dci.com>', // sender address
+      to: req.body.to, // list of receivers
+      cc: req.body.cc,
+      subject: req.body.subject, // Subject line
+      html: "<b>" + req.body.message + "</b>", // html body
+      attachments: [
+        {
+          filename: fileName,
+          path: "public/uploads/attachments/" + fileName
+        }
+      ]
+    };
+
+    transporter.sendMail(info, (err, info) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Message sent to : " + info.messageId);
+      }
+    });
+
+    fileName = null;
+    res.redirect("/");
+  });
+};
+
+exports.updateContact = (req, res) => {
+  upload(req, res, () => {
+    console.log(req.body);
+
+    //mongo goes here...
+    let updatedContact = {};
+    if (req.body.name != "") {
+      updatedContact.name = req.body.name;
+    }
+
+    if (req.body.email != "") {
+      updatedContact.mail = req.body.email;
+    }
+
+    if (fileName != null) {
+      updatedContact.avatar = fileName;
+      console.log(fileName);
+      //On here we will process the image resizing
+      jimp.read("public/uploads/avatars/" + fileName, (err, file) => {
+        if (err) throw err;
+        file
+          .resize(250, 250) //resize
+          .quality(60) // set the quality of image
+          .write("public/uploads/avatars/" + fileName); //save
+      });
+    }
+
+    if (updatedContact != {}) {
+      contacts.updateOne(
+        { _id: req.body.id },
+        { $set: updatedContact },
+        (err, result) => {
+          if (err) console.log(err);
+          else console.log(result);
+        }
+      );
+      fileName = null;
+    }
+    res.redirect("/");
+  });
+};
+
+exports.newUser = (req, res) => {
+  const { name, email, password, password2 } = req.body;
+  let errors = [];
+
+  if (!name || !email || !password || !password2) {
+    errors.push({ msg: "Passwords do not match" });
+  }
+
+  if (password.length < 6) {
+    errors.push({ msg: "Password must be at least 6 characters" });
+  }
+
+  if (errors.length > 0) {
+    res.json({
+      status: "error",
+      errors,
+      name,
+      email,
+      password,
+      password2
+    });
+  } else {
+    users.findOne({ email: email }).then(user => {
+      if (user) {
+        errors.push({ msg: "Email already exists" });
+        res.json({
+          status: "error",
+          errors,
+          name,
+          email,
+          password,
+          password2
+        });
+      } else {
+        // if there is no exists email add new user
+        const newUser = new User({
+          name,
+          email,
+          password
         });
 
-        // send mail with defined transport object
-        let info =  {
-            from: '"FBW6 Contact List Project 👻" <fb6@dci.com>', // sender address
-            to: req.body.to, // list of receivers
-            cc: req.body.cc,
-            subject: req.body.subject, // Subject line
-            html: "<b>"+req.body.message+"</b>", // html body
-            attachments: [{
-                filename:fileName,
-                path: 'public/uploads/attachments/' + fileName
-            }]
-        };
-
-        transporter.sendMail(info, (err,info)=>{
-            if(err){
-                console.log(err);
-            }else{
-                console.log('Message sent to : ' + info.messageId);
-            }
+        // hash passport
+        // genSalt is a method for bcrypt and 10 is number of characters
+        bcrypt.genSalt(10, (err, salt) => {
+          bcrypt.hash(newUser.password, salt, (err, hash) => {
+            if (err) throw err;
+            // set password to hashed
+            newUser.password = hash;
+            // save user
+            newUser
+              .save()
+              .then(user => {
+                res.json({
+                  status: success
+                });
+              })
+              .catch(err => res.json({ status: "error", errors: err }));
+          });
         });
-
-        fileName = null; 
-        res.redirect('/');
-
-        
+      }
     });
-}
-
-exports.updateContact = (req,res) => {
-    upload(req, res, () => {
-        console.log(req.body)
-        
-        //mongo goes here...
-        let updatedContact = {
-            
-        }
-        if (req.body.name != '' ){
-            updatedContact.name = req.body.name;
-        }
-
-        if (req.body.email != '' ){
-            updatedContact.mail = req.body.email;
-        }
-
-        if (fileName != null){
-            updatedContact.avatar = fileName;
-            console.log(fileName);
-            //On here we will process the image resizing
-            jimp.read('public/uploads/avatars/' + fileName, (err, file) => {
-                if(err) throw err;
-                file
-                    .resize(250,250) //resize
-                    .quality(60) // set the quality of image
-                    .write('public/uploads/avatars/' + fileName); //save
-            });
-        }
-
-        if (updatedContact != {}) {
-            contacts.updateOne({_id:req.body.id},{$set:updatedContact},
-                (err,result)=>{
-                    if(err) console.log(err);
-                    else console.log(result);
-            });
-            fileName = null;
-        }
-        res.redirect('/');
-    });
-}
+  }
+};
