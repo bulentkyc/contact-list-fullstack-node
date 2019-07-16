@@ -2,7 +2,8 @@ const multer = require("multer");
 const path = require("path");
 const jimp = require("jimp");
 const nodemailer = require("nodemailer");
-const users = require("../model/users");
+const Users = require("../model/users");
+const bcrypt = require("bcryptjs");
 
 let contactList = [];
 let fileName = null;
@@ -196,8 +197,8 @@ exports.newUser = (req, res) => {
       password2
     });
   } else {
-    users.findOne({ email: email }).then(user => {
-      if (user) {
+    Users.findOne({ email: email }).then(Users => {
+      if (User) {
         errors.push({ msg: "Email already exists" });
         res.json({
           status: "error",
@@ -209,7 +210,7 @@ exports.newUser = (req, res) => {
         });
       } else {
         // if there is no exists email add new user
-        const newUser = new User({
+        const newUser = new Users({
           name,
           email,
           password
@@ -227,7 +228,7 @@ exports.newUser = (req, res) => {
               .save()
               .then(user => {
                 res.json({
-                  status: success
+                  status: "success"
                 });
               })
               .catch(err => res.json({ status: "error", errors: err }));
