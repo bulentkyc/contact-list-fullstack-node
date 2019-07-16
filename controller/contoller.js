@@ -2,7 +2,7 @@ const multer = require('multer');
 const path = require('path');
 const jimp = require('jimp');
 const nodemailer = require('nodemailer');
-const contacts = require('../model/contacts');
+const contacts = require('../model/Users');
 
 
 let contactList = [];

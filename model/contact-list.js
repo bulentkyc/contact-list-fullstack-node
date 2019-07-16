@@ -1,7 +1,26 @@
-const mongoose = require('mongoose');
+const connection = require('./connection');
 
-mongoose.connect('mongodb://localhost/contact-list',
-{ useNewUrlParser: true});
+const ContactSchema = new mongoose.Schema({
+    ID:{
+        type:String,
+        required: true,
+    },    
+    name:{
+        type:String,
+        required: true,
+    },
+    email:{
+        type:String,
+        required: true,
+    },
+    avatar:{
+        type:String,
+    },
+    userID:{
+        type:String,
+    }
+});
 
-module.exports = mongoose;
+const ContactList= connection.model('ContactList', ContactSchema);
 
+module.exports= ContactList;
