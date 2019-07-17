@@ -197,7 +197,7 @@ exports.newUser = (req, res) => {
       password2
     });
   } else {
-    Users.findOne({ email: email }).then(Users => {
+    Users.findOne({ email: email }).then(User => {
       if (User) {
         errors.push({ msg: "Email already exists" });
         res.json({
