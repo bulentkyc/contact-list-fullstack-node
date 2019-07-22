@@ -1,0 +1,25 @@
+const connection = require('./connection');
+
+const ContactSchema = new connection.Schema({
+    ID:{
+        type:String
+    },    
+    name:{
+        type:String,
+        required: true,
+    },
+    email:{
+        type:String,
+        required: true,
+    },
+    avatar:{
+        type:String,
+    },
+    userID:{
+        type:String,
+    }
+});
+
+const ContactList= connection.model('ContactList', ContactSchema);
+
+module.exports= ContactList;
