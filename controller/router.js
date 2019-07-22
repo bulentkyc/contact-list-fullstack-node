@@ -14,4 +14,6 @@ router.post("/updateContact", controller.updateContact);
 
 router.post("/newUser", controller.newUser);
 
+router.post('/login', controller.login)
+
 module.exports = router;
