@@ -4,7 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "start": "npm start",
   },
   "author": "Bulent",
   "license": "MIT",
