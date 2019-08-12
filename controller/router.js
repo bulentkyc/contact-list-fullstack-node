@@ -1,20 +1,23 @@
-const express = require('express')
-const router = express.Router()
-const controller = require('./contoller')
-const { ensureAuthenticated } = require('./auth')
+const express = require('express');
+const router = express.Router();
+const controller = require('./contoller');
 
-router.get('/', ensureAuthenticated, controller.homeRoute)
+// router.get("/", controller.homeRoute);
 
-router.post('/newContact', controller.newContact)
+router.post('/newContact', controller.newContact);
 
-// router.get("/deleteContact/:id", controller.deleteContact);
+router.post('/uploadAvatar', controller.uploadAvatar);
 
-router.post('/sendMail', controller.sendMail)
+router.get('/getContactList/:id', controller.getContactList);
 
-// router.post("/updateContact", controller.updateContact);
+router.get('/deleteContact/:id', controller.deleteContact);
 
-router.post('/newUser', controller.newUser)
+router.post('/sendMail', controller.sendMail);
 
-router.post('/loginUser', controller.loginUser)
+router.post("/updateContact", controller.updateContact);
 
-module.exports = router
+router.post('/newUser', controller.newUser);
+
+router.post('/loginUser', controller.loginUser);
+
+module.exports = router;

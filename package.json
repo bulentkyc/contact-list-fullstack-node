@@ -8,10 +8,13 @@
   },
   "author": "Bulent",
   "license": "MIT",
+  "engines": { "npm": "5.7.1", "node": "9.5.0" },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "connect-flash": "^0.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^8.0.0",
     "ejs": "^2.6.2",
     "express": "^4.17.1",
     "express-ejs-layouts": "^2.5.0",
